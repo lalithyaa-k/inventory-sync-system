@@ -1,62 +1,19 @@
-pipeline {
-    agent any
-
-    environment {
-        DOCKER_IMAGE = "klalithyaa/inventory-sync-system:latest"
-        MAVEN_HOME = "C:\\Program Files\\apache-maven-3.9.14"
-        PATH = "${env.MAVEN_HOME}\\bin;${env.PATH}"
-    }
-
-    stages {
-        stage('Clone Repository') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/lalithyaa-k/inventory-sync-system.git'
-            }
-        }
-
-        stage('Build & Run Tests') {
-            steps {
-                bat 'mvn clean test'
-            }
-            post {
-                always {
-                    junit 'target/surefire-reports/*.xml'
-                }
-            }
-        }
-
-        stage('Package Application') {
-            steps {
-                bat 'mvn package -DskipTests'
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                bat "docker build -t %DOCKER_IMAGE% ."
-            }
-        }
-
-        stage('Push to DockerHub') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    bat """
-                    docker login -u %DOCKER_USER% -p %DOCKER_PASS%
-                    docker push %DOCKER_IMAGE%
-                    """
-                }
-            }
-        }
-
-        stage('Deploy to Kubernetes') {
-            steps {
-                bat 'kubectl apply -f deployment.yaml --validate=false'
-            }
-        }
-    }
-}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-sync-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory-sync-app
+  template:
+    metadata:
+      labels:
+        app: inventory-sync-app
+    spec:
+      containers:
+        - name: inventory-sync-app
+          image: klalithyaa/inventory-sync-system:latest
+          ports:
+            - containerPort: 8080
