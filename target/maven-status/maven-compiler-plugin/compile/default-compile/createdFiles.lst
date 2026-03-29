@@ -1,0 +1,8 @@
+Product.class
+SyncService.class
+InventoryService.class
+SyncResult.class
+InventoryItem.class
+WarehouseService.class
+App.class
+InventoryRepository.class
