@@ -16,4 +16,4 @@ spec:
         - name: inventory-sync-app
           image: klalithyaa/inventory-sync-system:latest
           ports:
-            - containerPort: 8080
+            - containerPort: 8086
